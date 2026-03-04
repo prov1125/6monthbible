@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>184일간 모임성경통독</title>
+    <style>
+        body {
+            font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+            background-color: #f7f9fa;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            padding: 20px;
+            overflow: hidden;
+        }
+        h1 {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .progress-container {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee;
+        }
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #555;
+        }
+        .progress-bar-bg {
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            height: 12px;
+            width: 100%;
+            overflow: hidden;
+        }
+        .progress-bar {
+            background-color: #4A90E2;
+            height: 100%;
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+        .list-container {
+            max-height: 70vh;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+        /* 스크롤바 디자인 */
+        .list-container::-webkit-scrollbar { width: 6px; }
+        .list-container::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+        
+        .item {
+            display: flex;
+            align-items: center;
+            padding: 14px 10px;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.2s;
+        }
+        .item:hover {
+            background-color: #fafafa;
+        }
+        .item:last-child {
+            border-bottom: none;
+        }
+        .day {
+            width: 65px;
+            font-size: 15px;
+            color: #777;
+        }
+        .checkbox-wrapper {
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+        }
+        input[type="checkbox"] {
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            accent-color: #4A90E2;
+        }
+        .content {
+            flex-grow: 1;
+            font-size: 16px;
+            font-weight: 500;
+            transition: color 0.3s;
+            line-height: 1.4;
+        }
+        .item.completed .content {
+            color: #aaa;
+            text-decoration: line-through;
+        }
+        .item.completed .day {
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>📖 184일간 모임성경통독</h1>
+    
+    <div class="progress-container">
+        <div class="progress-text">
+            <span id="progress-percent">진행률: 0%</span>
+            <span id="progress-count">0 / 184</span>
+        </div>
+        <div class="progress-bar-bg">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+    </div>
+
+    <div class="list-container" id="list">
+        <!-- 자바스크립트로 리스트가 생성됩니다. -->
+    </div>
+</div>
+
+<script>
+    // 1일차 ~ 184일차 전체 성경통독 데이터
+    const bibleData = [
+        "창세기 1-6장", "창세기 7-15장", "창세기 16-21장", "창세기 22-26장", "창세기 27-30장",
+        "창세기 31-35장", "창세기 36-41장", "창세기 42-46장", "창세기 47-50장;출애굽기 1장", "출애굽기 2-8장",
+        "출애굽기 9-13장", "출애굽기 14-19장", "출애굽기 20-25장", "출애굽기 26-32장", "출애굽기 33-37장",
+        "출애굽기 38-40장;레위기 1-4장", "레위기 5-10장", "레위기 11-15장", "레위기 16-21장", "레위기 22-26장",
+        "레위기 27장;민수기 1-4장", "민수기 5-8장", "민수기 9-14장", "민수기 15-18장", "민수기 19-24장",
+        "민수기 25-30장", "민수기 31-35장", "민수기 36장;신명기 1-4장", "신명기 5-9장", "신명기 10-13장",
+        "신명기 14-18장", "신명기 19-24장", "신명기 25-29장", "신명기 30-32장", "신명기 33-34장;여호수아 1-6장",
+        "여호수아 7-10장", "여호수아 11-17장", "여호수아 18-22장", "여호수아 23-24장;사사기 1-3장", "사사기 4-8장",
+        "사사기 9-13장", "사사기 14-18장", "사사기 19-21장;룻기 1-2장", "룻기 3-4장;사무엘상 1-4장", "사무엘상 5-10장",
+        "사무엘상 11-15장", "사무엘상 16-19장", "사무엘상 20-25장", "사무엘상 26-31장", "사무엘하 1-5장",
+        "사무엘하 6-12장", "사무엘하 13-16장", "사무엘하 17-19장", "사무엘하 20-24장", "열왕기상 1-4장",
+        "열왕기상 5-8장", "열왕기상 9-12장", "열왕기상 13-16장", "열왕기상 17-21장", "열왕기상 22장;열왕기하 1-3장",
+        "열왕기하 4-7장", "열왕기하 8-12장", "열왕기하 13-17장", "열왕기하 18-22장", "열왕기하 23-25장;역대상 1-2장",
+        "역대상 3-6장", "역대상 7-12장", "역대상 13-18장", "역대상 19-25장", "역대상 26-29장;역대하 1-2장",
+        "역대하 3-8장", "역대하 9-15장", "역대하 16-22장", "역대하 23-28장", "역대하 29-33장",
+        "역대하 34-36장;에스라 1-2장", "에스라 3-8장", "에스라 9-10장;느헤미야 1-4장", "느헤미야 5-10장", "느헤미야 11-13장;에스더 1-2장",
+        "에스더 3-10장;욥기 1장", "욥기 2-9장", "욥기 10-19장", "욥기 20-30장", "욥기 31-38장",
+        "욥기 39-42장;시편 1-9편", "시편 10-22편", "시편 23-34편", "시편 35-44편", "시편 45-57편",
+        "시편 58-69편", "시편 70-78편", "시편 79-89편", "시편 90-104편", "시편 105-111편",
+        "시편 112-119편", "시편 120-139편", "시편 140-150편;잠언 1-2장", "잠언 3-10장", "잠언 11-17장",
+        "잠언 18-23장", "잠언 24-30장", "잠언 31장;전도서 1-7장", "전도서 8-12장;아가 1-5장", "아가 6-8장;이사야 1-5장",
+        "이사야 6-11장", "이사야 12-21장", "이사야 22-28장", "이사야 29-36장", "이사야 37-41장",
+        "이사야 42-47장", "이사야 48-54장", "이사야 55-63장", "이사야 64-66장;예레미야 1-2장", "예레미야 3-7장",
+        "예레미야 8-13장", "예레미야 14-19장", "예레미야 20-25장", "예레미야 26-30장", "예레미야 31-34장",
+        "예레미야 35-40장", "예레미야 41-48장", "예레미야 49-51장", "예레미야 52장;예레미야애가 1-3장", "예레미야애가 4-5장;에스겔 1-5장",
+        "에스겔 6-12장", "에스겔 13-18장", "에스겔 19-23장", "에스겔 24-28장", "에스겔 29-33장",
+        "에스겔 34-39장", "에스겔 40-44장", "에스겔 45-48장;다니엘 1-2장", "다니엘 3-5장", "다니엘 6-9장",
+        "다니엘 10-12장;호세아 1-4장", "호세아 5-14장;요엘 1장", "요엘 2-3장;아모스 1-5장", "아모스 6-9장;오바댜;요나;미가 1장", "미가 2-7장;나훔;하박국 1장",
+        "하박국 2-3장;스바냐;학개", "스가랴 1-10장", "스가랴 11-14장;말라기;마태복음 1-2장", "마태복음 3-8장", "마태복음 9-13장",
+        "마태복음 14-20장", "마태복음 21-25장", "마태복음 26-28장;마가복음 1장", "마가복음 2-6장", "마가복음 7-11장",
+        "마가복음 12-16장", "누가복음 1-4장", "누가복음 5-8장", "누가복음 9-12장", "누가복음 13-17장",
+        "누가복음 18-22장", "누가복음 23-24장;요한복음 1-3장", "요한복음 4-7장", "요한복음 8-11장", "요한복음 12-15장",
+        "요한복음 16-20장", "요한복음 21장;사도행전 1-5장", "사도행전 6-10장", "사도행전 11-15장", "사도행전 16-21장",
+        "사도행전 22-26장", "사도행전 27-28장;로마서 1-4장", "로마서 5-10장", "로마서 11-16장", "고린도전서 1-8장",
+        "고린도전서 9-15장", "고린도전서 16장;고린도후서 1-7장", "고린도후서 8-13장;갈라디아서 1장", "갈라디아서 2-6장;에베소서 1-3장",
+        "에베소서 4-6장;빌립보서",
+        "골로새서;데살로니가전서;데살로니가후서 1장",
+        "데살로니가후서 2-3장;디모데전서;디모데후서 1-2장",
+        "디모데후서 3-4장;디도서;빌레몬서;히브리서 1-5장",
+        "히브리서 6-12장",
+        "히브리서 13장;야고보서;베드로전서 1-2장",
+        "베드로전서 3-5장;베드로후서;요한일서 1-3장",
+        "요한일서 4-5장;요한이서;요한삼서;유다서;요한계시록 1-3장",
+        "요한계시록 4-13장",
+        "요한계시록 14-22장"
+    ];
+
+    const listContainer = document.getElementById('list');
+    const progressBar = document.getElementById('progress-bar');
+    const progressPercent = document.getElementById('progress-percent');
+    const progressCount = document.getElementById('progress-count');
+
+    // 로컬 스토리지에서 저장된 데이터 불러오기 (데이터가 없으면 빈 객체)
+    let savedProgress = JSON.parse(localStorage.getItem('bibleReadingProgress')) || {};
+
+    // 체크리스트 화면 렌더링 함수
+    function renderList() {
+        listContainer.innerHTML = '';
+        let completedCount = 0;
+        const totalDays = bibleData.length;
+
+        bibleData.forEach((text, index) => {
+            const day = index + 1;
+            const isChecked = savedProgress[day] ? 'checked' : '';
+            const completedClass = isChecked ? 'completed' : '';
+            
+            if (isChecked) completedCount++;
+
+            const itemDiv = document.createElement('div');
+            itemDiv.className = `item ${completedClass}`;
+            
+            itemDiv.innerHTML = `
+                <div class="day">${day}일차</div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="check-btn" data-day="${day}" id="check-${day}" ${isChecked}>
+                </div>
+                <label class="content" for="check-${day}">${text}</label>
+            `;
+            listContainer.appendChild(itemDiv);
+        });
+
+        updateProgress(completedCount, totalDays);
+    }
+
+    // 진행률 업데이트 함수
+    function updateProgress(completed, total) {
+        // 소수점 첫째 자리까지 표시 (예: 50.5%)
+        const percentage = ((completed / total) * 100).toFixed(1);
+        progressBar.style.width = percentage + '%';
+        progressPercent.innerText = `진행률: ${percentage}%`;
+        progressCount.innerText = `${completed} / ${total}`;
+    }
+
+    // 체크박스 클릭 이벤트 리스너 (이벤트 위임)
+    listContainer.addEventListener('change', (e) => {
+        if (e.target.classList.contains('check-btn')) {
+            const day = e.target.getAttribute('data-day');
+            const isChecked = e.target.checked;
+            
+            // 상태 업데이트
+            savedProgress[day] = isChecked;
+            
+            // 로컬 스토리지에 즉시 저장
+            localStorage.setItem('bibleReadingProgress', JSON.stringify(savedProgress));
+            
+            // 클릭한 항목의 스타일 변경 및 진행바 갱신
+            const itemDiv = e.target.closest('.item');
+            if (isChecked) {
+                itemDiv.classList.add('completed');
+            } else {
+                itemDiv.classList.remove('completed');
+            }
+            
+            // 진행률만 다시 계산해서 UI 갱신 (전체를 다시 그리지 않아 더 부드러움)
+            const completedCount = Object.values(savedProgress).filter(v => v === true).length;
+            updateProgress(completedCount, bibleData.length);
+        }
+    });
+
+    // 초기 화면 렌더링 실행
+    renderList();
+</script>
+
+</body>
+</html>
